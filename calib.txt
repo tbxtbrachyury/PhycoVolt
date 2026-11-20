@@ -1,0 +1,56 @@
+# ADALM1000 calibration · 2026-11-18 15:19
+# M1K serial 203120443752474B323430323830323 · fw 2.17 · hw D · multimeter Agilent 34401A (datasheet 5968-0162: 1-year accuracy, 23 ± 5 °C, after 1 h on)
+# Pairs: measure = <reference, M1K>; source = <request, multimeter>; in V and A; the zero comes first.
+# Blocks measured in this run: CH A measure V, CH B measure V, CH A source V, CH B source V, CH A measure I, CH B measure I, CH A source I, CH B source I
+
+# Channel A, measure V   ->  offset 0.000566, gain+ 1.023517, gain- 1.000000
+</>
+<0.0000, 0.000566>
+<2.445100, 2.389485>
+<\>
+
+# Channel A, measure I   ->  offset 0.0005275, gain+ 1.019914, gain- 1.017460
+</>
+<0.0000, 0.0005275>
+<0.1015730, 0.1001173>
+<-0.1030510, -0.1007551>
+<\>
+
+# Channel A, source V   ->  offset 0.002752, gain+ 1.001784, gain- 1.000000
+</>
+<0.0000, 0.002752>
+<2.5000, 2.498300>
+<\>
+
+# Channel A, source I   ->  offset -0.0003932, gain+ 1.008366, gain- 1.008412
+</>
+<0.0000, -0.0003932>
+<0.1000, 0.0987771>
+<-0.1000, -0.0995590>
+<\>
+
+# Channel B, measure V   ->  offset 0.000538, gain+ 1.023770, gain- 1.000000
+</>
+<0.0000, 0.000538>
+<2.445100, 2.388867>
+<\>
+
+# Channel B, measure I   ->  offset 0.0005136, gain+ 1.020277, gain- 1.018271
+</>
+<0.0000, 0.0005136>
+<0.1015060, 0.1000023>
+<-0.1028970, -0.1005371>
+<\>
+
+# Channel B, source V   ->  offset 0.001327, gain+ 1.001694, gain- 1.000000
+</>
+<0.0000, 0.001327>
+<2.5000, 2.497100>
+<\>
+
+# Channel B, source I   ->  offset -0.0006588, gain+ 1.008778, gain- 1.009436
+</>
+<0.0000, -0.0006588>
+<0.1000, 0.0984710>
+<-0.1000, -0.0997240>
+<\>
