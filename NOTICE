@@ -1,0 +1,4 @@
+PhycoVolt
+Copyright 2026 The PhycoVolt authors
+
+phycovolt/libsmu_math.py reproduces the calibration and DAC arithmetic of libsmu 1.0.3 (BSD-3-Clause), as read in its source code; no libsmu code is included.

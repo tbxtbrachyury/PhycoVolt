@@ -1,0 +1,26 @@
+# The operator's results stay out of git
+/recordings/
+/calibrations/
+# The operator's lab notes and checklists
+/lab/
+# The operator's local drafts
+/drafts/
+
+# Scratch output of test runs and rehearsals (--output)
+/scratch/
+/output/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+
+# Editors and systems
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
