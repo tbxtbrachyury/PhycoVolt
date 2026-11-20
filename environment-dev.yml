@@ -1,0 +1,23 @@
+# PhycoVolt development environment: a newer Python, and NO pysmu.
+#
+# It proves that the code also runs on a newer Python (spec 4.3, NF-04) and that the whole test suite
+# runs without the vendor library. It cannot drive the instrument: there is nothing to drive it with.
+# Versions resolved on conda-forge on 2026-11-20.
+#
+#     micromamba create -f environment-dev.yml
+#     micromamba run -n phycovolt-dev python -m pytest
+name: phycovolt-dev
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.14.10
+  - numpy=2.5.5
+  - scipy=1.18.1
+  - matplotlib=3.11.2
+  - pyside6=6.12.0
+  - rich=15.0.0          # the styled command line (spec 3.1)
+  - pyserial=3.5
+  - pytest=9.2.0
+  - pip
+  - setuptools

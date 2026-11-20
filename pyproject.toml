@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=77"]          # the PEP 639 license fields
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "phycovolt"
+dynamic = ["version"]          # from phycovolt/__init__.py
+description = "Calibrate the ADALM1000 (M1K) and generate and measure stimulation signals with it"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+# Installed by environment.yml, not by pip: `pip install -e . --no-deps --no-build-isolation`.
+# pysmu is not on PyPI; it comes with conda-forge's libsmu, in the lab environment only.
+dependencies = ["numpy", "scipy", "matplotlib", "rich", "pyserial"]
+
+[project.scripts]
+phycovolt = "phycovolt.__main__:main"
+
+[tool.setuptools]
+packages = ["phycovolt"]
+
+[tool.setuptools.dynamic]
+version = { attr = "phycovolt.__version__" }
+
+[tool.setuptools.package-data]
+phycovolt = ["unit.ini", "profiles/*.ini"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra --strict-markers"
+markers = ["slow: takes long; not part of the ~2 min suite (run with -m slow)"]

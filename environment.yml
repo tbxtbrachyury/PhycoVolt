@@ -1,0 +1,29 @@
+# PhycoVolt lab environment: the one that drives the M1K.
+#
+# Python 3.10 because libsmu 1.0.3 (with its Python binding, pysmu) is only packaged on conda-forge
+# for Python <= 3.10 (spec S-01, L-14). Every package the program uses directly is pinned to the
+# exact version that conda-forge resolved on 2026-11-20.
+#
+# Create it (needs internet, about 200 MB):
+#     micromamba create -f environment.yml
+# Check it (does not touch the M1K):
+#     micromamba activate phycovolt
+#     python -m pytest tests/test_environment.py
+# On Linux, the M1K's udev rule must be active after installing (spec S-02; already done on the
+# operator's laptop). The same pins also resolve for Windows (win-64).
+name: phycovolt
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.10.22
+  - libsmu=1.0.3          # the vendor library and pysmu; also provides the `smu` utility
+  - numpy=2.2.6
+  - scipy=1.15.2
+  - matplotlib=3.10.9
+  - pyside6=6.11.2        # the Qt backend for the plot window
+  - rich=15.0.0          # the styled command line (spec 3.1)
+  - pyserial=3.5
+  - pytest=9.2.0
+  - pip=26.2.1
+  - setuptools=84.0.0     # builds `pip install -e .` with a pinned version
