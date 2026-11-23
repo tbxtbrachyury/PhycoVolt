@@ -11,6 +11,9 @@ command line it:
    checking the result against the circuit's physics;
 3. **records** everything, analyzes a recording again at any time and plots it on request.
 
+Version 0.1.0, not released yet: it is released after its acceptance on the bench, and no culture is
+connected before that.
+
 ## Safety
 
 - **Nothing is switched on without `--confirm-output`.** Without it, `phycovolt signals` reads both
