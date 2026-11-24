@@ -47,8 +47,8 @@ recommended; deviating needs a written reason in the decision log (§2.3). MAY: 
 
 Weak electrical stimulation (µA to mA; DC, AC and pulses) of microalgae and bacteria cultures.
 PhycoVolt is the stimulation system's software: it calibrates the M1K, applies the stimuli and
-measures voltage and current; the filtering of the measured signals and impedance come in later
-versions (§4.2). The research protocol is the research lead's (§11 item 4).
+measures voltage and current; the decision on filtering the measured signals, and impedance, come in
+later versions (§4.2). The research protocol is the research lead's (§11 item 4).
 
 ### 1.2 The signal chain
 
@@ -154,7 +154,8 @@ behavior, found by reading its source code and by measuring on the instrument.
 
 - **M1K**, rev D, firmware 2.17, calibrated on 2026-11-18 (`calib.txt`).
 - **Agilent 34401A** 6½-digit multimeter: the **calibration reference**. It has RS-232 and GPIB (one
-  active at a time) and **no USB**. The RS-232 link needs a cable and a USB-to-RS-232 adapter; without them,
+  active at a time) and **no USB**. The RS-232 link needs a null-modem cable (available since
+  2026-11-24) and a USB-to-RS-232 adapter. Until the link is validated on the bench (roadmap 0.2),
   calibrations use the typed mode. Another bench multimeter with a computer link needs its own
   profile (§3.8).
 - **Keysight DSOX2022A oscilloscope** (InfiniiVision 2000 X: 200 MHz, 2 channels, 8 bits, a USB device
@@ -523,7 +524,8 @@ A recording MUST be analyzable again from `samples.csv.gz` and `metadata.json` a
 ### 3.5 Analyze a recording
 
 Choose a recording folder → show its summary → run the standard analysis again → open the plot. This is
-where later methods (Butterworth filtering, roadmap 0.2) are applied and compared.
+where later methods (a filter, if roadmap 0.2 adopts one) are applied and compared with the standard
+analysis.
 
 ### 3.6 The standard analysis
 
@@ -668,7 +670,7 @@ from its profile.
 - **Profile** (INI file, B.3): name, specification source, accuracy table per function and range,
   distribution, terminal names, connection settings, the SCPI commands used. A template with `FILL_IN`
   fields is refused until filled.
-- 34401A notes (to confirm against its user's guide and the 2026-11-21 lab check): RS-232 needs remote
+- 34401A notes (to confirm against its user's guide at the link's first bench use, roadmap 0.2): RS-232 needs remote
   mode (`SYST:REM`) before measurement commands; the instrument is a DTE, so a null-modem cable is
   needed; DTR/DSR handshake; baud rate and parity as set in its I/O menu.
 
@@ -701,14 +703,14 @@ before the operator has validated the program on the bench.**
 
 ### 4.2 After v0.1 (sketch)
 
-The order: calibration, then filtering of the measured signals, then impedance from the load's
-voltage and the current.
+The order: calibration, then filtering of the measured signals (if the bench shows a need), then
+impedance from the load's voltage and the current.
 
 | Version | Content | Depends on |
 |---|---|---|
-| 0.2 | **Filtering**: Butterworth (and any other filter worth comparing) in "Analyze a recording", compared with the standard analysis (block means, cycle average, sine regression) on the same recordings; the open statistical decisions of §8 are settled here | v0.1 recordings; the statistical decisions of §8 |
+| 0.2 | **Calibration over RS-232 on the bench**: the automatic reading of the 34401A (coded in v0.1, tested only against a fake) checked against the typed mode, with the fixes the bench shows. **Filtering, if needed**: the standard analysis already filters (a 100 ms block mean cancels 60 Hz and its harmonics; the sine regression is a synchronous detection at the stimulus frequency; the cycle average keeps what repeats every period and averages down the rest). Bench evidence decides whether a filter (Butterworth or another) adds anything: the spectrum of the regression's residual, repeated identical bursts, and the oscilloscope for content above 50 kHz, which folds into the band when sampled and only an analog filter before the ADC removes. A filter that is adopted goes in "Analyze a recording" and is compared with the standard analysis on the same recordings. **The open statistical decisions of §8** are settled here | v0.1 recordings and bench acceptance (§9.3); the RS-232 cable and a USB adapter; the statistical decisions of §8 |
 | 0.3 | **Impedance**: the i-v-i board's scale measured (gain, offset, sign), the current at the culture measured by a `hi-z` channel over a shunt, impedance (modulus and phase) at several frequencies; the board's frequency response with the oscilloscope over USB | the board; measurements on it |
-| 0.4 | **Long stimulation** by chained bursts (each ≤ 10 s, DAC parked between them), logging by per-block summaries (raw samples only in snapshots: 100 kS/s × 4 values ≈ 1.6 MB/s ≈ 6 GB per hour), a watchdog process, an on-screen monitor. Bench measurements with the oscilloscope: switch-on transient, gap between bursts, program death | those bench measurements; the research protocol; the research computer |
+| 0.4 | **Long stimulation** by chained bursts (each ≤ 10 s, DAC parked between them), or by longer bursts if the burst-length test (§6.3 item 13) shows them stable; logging by per-block summaries (raw samples only in snapshots: 100 kS/s × 4 values ≈ 1.6 MB/s ≈ 6 GB per hour), a watchdog process, an on-screen monitor. Bench measurements with the oscilloscope: switch-on transient, gap between bursts, program death | the burst-length test; those bench measurements; the research protocol; the research computer |
 | later | **own USB driver** (pyusb; about 16 control requests and two bulk endpoints, 0x81 in and 0x02 out) and newer Python; arbitrary waveform from a CSV file; stimulation protocols (schedules); live numbers during a burst; documentation in Portuguese | — |
 
 If short pauses of zero current are not acceptable for the research protocol, the own driver comes
@@ -777,7 +779,7 @@ documentation; **[issue]** reported in libsmu's repository; **[data]** computed 
 | I-04 | end every path (normal end, error, stop, Ctrl+C, signals) with both channels in HI_Z, and restore Python's default Ctrl+C handler after opening the session | pysmu installs a handler that kills the process at once, without switching the channels off (P-02) |
 | I-05 | create the session with `ignore_dataflow=False` and read in 100 ms chunks with a timeout (2 s); a lost sample is an error | otherwise libsmu drops samples silently (L-15); and `get_samples()` blocks the program until the end, with no progress and no Ctrl+C (P-03) |
 | I-06 | do a 100 ms read right after opening the session, before any manual `start`/`end` | libsmu 1.0.3 only sets `end()`'s timeout inside `run()` (L-10) |
-| I-07 | use one M1K at a time, 100 000 samples/s, and finite bursts (≤ 10 s) | with two instruments the start is scheduled and the I-01 window grows (L-07); below 100 kS/s libsmu hangs (L-12); 1.0.3's continuous mode hangs or drops samples (L-11) |
+| I-07 | use one M1K at a time, 100 000 samples/s, and finite bursts (≤ 10 s, this program's cap: §6.3 item 13) | with two instruments the start is scheduled and the I-01 window grows (L-07); below 100 kS/s libsmu hangs (L-12); 1.0.3's continuous mode hangs or drops samples (L-11) |
 | I-08 | **never** write the EEPROM; that is the operator's job, with `smu -w` | safety; and the calibration utility that comes with pysmu writes without asking, and is wrong (P-04) |
 | I-09 | calibrate with raw values: undo the stored correction in every measured sample and pre-distort every source request | libsmu applies the stored calibration to everything (L-02, L-03); without this the good calibration would have to be erased (`smu -r`) before knowing whether the new one is better |
 | I-10 | put in `calib.txt` only the necessary pairs; extra points become verifications | `smu -w` averages ratios, it does not fit a line: a third point hides the non-linearity instead of correcting it (L-01) |
@@ -1041,6 +1043,17 @@ recorded:
     the M1K's absolute maximum input voltage.
 12. ~~The noise structure at rest~~ — answered on 2026-11-21: H-10 and H-14 (no hum; slow noise with a
     block correlation ~0.65 that survives detrending).
+13. **How long one finite burst can last.** The 10 s cap (I-07, the `duration` check) is this
+    program's: it equals libsmu's queue as the program opens it (1 000 000 samples), so that a whole
+    burst fits in it. [source] libsmu 1.0.3 takes the sample count as a 64-bit integer in
+    `Session::start` and `Session::run`, and pysmu passes it as `uint64_t`; reading in 100 ms chunks,
+    the queue only absorbs reading delays. No burst longer than 10 s has been run. Before 0.4 is
+    designed: bursts of 1 min, 10 min and 1 h, first in the simulator, then on the bench with a
+    resistor and no culture, recording whether each completes, lost samples, the timing of the
+    chunks, drift, the overcurrent flag and F-01/F-02. The test needs first a way to lift the cap,
+    recording by per-block summaries (§4.3 item 2), the swap and lost-sample checks per chunk, and an
+    answer for overcurrent, which libsmu reports only at the end of a read (L-09). If long bursts are
+    stable, long stimulation needs only a few pauses per hour, and the own driver may not be needed.
 
 ---
 
@@ -1177,6 +1190,8 @@ class Instrument(Protocol):            # implemented by m1k.py and simulator.py
 3. The robust spread used for jumps: 1.4826 × MAD (provisional) or one based on the interquartile range.
 4. The uncertainty of periodic results (amplitude, level, phase, impedance seen): shown without ± for
    now, with the residual rms.
+5. Whether a filter (Butterworth or another) is applied before the standard analysis, which already
+   averages in blocks, by cycles and by synchronous detection (§4.2, 0.2). v0.1 applies none.
 
 **Monte Carlo validation (why and how).** The ± the program prints is a promise: the true value is inside
 it about 95 % of the time. On the bench nobody knows the true value; in the simulator we choose it. The
@@ -1291,8 +1306,9 @@ analyzes the results; the operator runs it:
    (should read ~0.1 V). The same on CH B.
 4. CH A source-i square and pulse defaults on 10 Ω to 2.5V, observed on the oscilloscope (ground clip on
    GND only): shape, frequency, edges.
-5. Calibration, measure-v stage only, with `--output` to a test folder (EEPROM untouched; typed mode until
-   the RS-232 cable arrives, §11 item 5): the new record within the uncertainty of the stored one (H-03).
+5. Calibration, measure-v stage only, with `--output` to a test folder (EEPROM untouched; typed mode, as
+   the RS-232 link is validated on the bench in 0.2, §4.2): the new record within the uncertainty of the
+   stored one (H-03).
 6. Method B with current (§8): step 3's burst repeated three times, identical, 10 s each, within a few
    minutes, on CH A and on CH B. The developer compares the spread of the three current means with the u
    that method B gave for one burst, as on 2026-11-21 for voltage at rest, and reports the ratio.
@@ -1325,15 +1341,15 @@ the lab notes.
 
 ---
 
-## 11. Open decisions (as of 2026-11-21)
+## 11. Open decisions (as of 2026-11-24)
 
 1. *(Decided on 2026-11-21: the uncertainty of a reading's mean is method B, §8.)*
 2. Whether signal results include the calibration's uncertainty (§8).
 3. The robust spread for jumps (§8).
 4. The research protocol (shapes, currents at the culture, duration, duty cycle,
    tolerance to short pauses), which sets long stimulation (roadmap 0.4).
-5. The RS-232 link for the 34401A (a cable and a USB adapter), or another multimeter with its own
-   profile. Until then, the typed mode.
+5. ~~The RS-232 link for the 34401A~~ — the cable is available (2026-11-24); the link is validated on
+   the bench in 0.2 (§4.2). Until then, the typed mode.
 6. The i-v-i board's scale factor and sign, and its nodes' voltage range.
 7. ~~The oscilloscope's model~~ — a DSOX2022A (automation in 0.3).
 8. The exact command-line syntax (§3.1 gives the recommended form).
@@ -1341,6 +1357,7 @@ the lab notes.
    is not the development laptop. It decides how PhycoVolt is installed for the
    researchers (libsmu's availability on that system included) and where long stimulation runs (0.4).
 10. The uncertainty of periodic results (§8, item 4).
+11. Whether a filter is applied before the standard analysis (§8, item 5; roadmap 0.2).
 
 ---
 
