@@ -1301,23 +1301,24 @@ The "right" circuit is the one informed, simulated with 0.4 Ω of wires and the 
 ### 9.3 Bench acceptance (by the operator, after v0.1)
 
 The developer prepares the procedure (kept with the operator's lab notes, outside the repository) and
-analyzes the results; the operator runs it:
+analyzes the results; the operator runs it. The steps are numbered in the order they are run: those
+that compare no readings first, while the instruments warm up (H-11), and steps 4 and 5 on one wiring.
 
 1. Open the program: the board check passes (2 s at rest, no V/I swap).
-2. CH A source-v sine, 100 Hz, 2 V p-p around 2.5 V, load 47 Ω + shunt 10 Ω to GND, CH B hi-z on the
+2. CH A source-i square and pulse defaults on 10 Ω to 2.5V, observed on the oscilloscope (ground clip on
+   GND only): shape, frequency, edges.
+3. CH A source-v sine, 100 Hz, 2 V p-p around 2.5 V, load 47 Ω + shunt 10 Ω to GND, CH B hi-z on the
    middle node: amplitude within 0.5 % of the request, mean current ≈ 2.5 V ÷ 57 Ω, shunt current agrees,
    no warning.
-3. CH A source-i dc, +10 mA through 10 Ω to 2.5V, with the multimeter in DC V across the resistor
+4. CH A source-i dc, +10 mA through 10 Ω to 2.5V, with the multimeter in DC V across the resistor
    (should read ~0.1 V). The same on CH B.
-4. CH A source-i square and pulse defaults on 10 Ω to 2.5V, observed on the oscilloscope (ground clip on
-   GND only): shape, frequency, edges.
-5. Calibration, measure-v stage only, with `--output` to a test folder (EEPROM untouched; typed mode, as
-   the RS-232 link is validated on the bench in 0.2, §4.2): the new record within the uncertainty of the
-   stored one (H-03).
-6. The standard deviation of the block means with current (§8): step 3's burst repeated three times,
+5. The standard deviation of the block means with current (§8): step 4's burst repeated three times,
    identical, 10 s each, within a few minutes, on CH A and on CH B. The developer compares the spread
    of the three current means with the u that the standard deviation of the block means gave for one
    burst, as on 2026-11-21 for voltage at rest, and reports the ratio.
+6. Calibration, measure-v stage only, with `--output` to a test folder (EEPROM untouched; typed mode, as
+   the RS-232 link is validated on the bench in 0.2, §4.2): the new record within the uncertainty of the
+   stored one (H-03).
 
 Accepted when the results are as predicted and no check flags a problem that the mounted circuit does not
 have.
@@ -1358,7 +1359,7 @@ The developer writes its procedure for the operator, kept with the lab notes.
 |---|---|---|
 | WP7 | **RS-232 on the bench** (§4.2): a command that checks only the multimeter link, without the M1K (identify, configure, a few readings and the interval between them), tested first against a fake transport; the 34401A profile checked against its user's guide (the resolution `CONF` sets, the time per reading, the lag of the time stamp); the four calibration stages in automatic mode into a test folder, compared with the typed mode; each fix with a test | R5 → bench |
 | WP8 | **The uncertainty of periodic results** (§8 item 4): a note with the options and their coverage in the simulator; the operator decides; then a ± for the level, amplitude and phase and the impedance seen, with a coverage test. The note also asks whether periodic results get the quality indicators that DC results already have (σ, r₁, jumps, drift). The real coverage is checked on the repeated bursts of the sample-quality session | R6 |
-| WP9 | **§8 items 2 and 3**: whether the ± of signal results includes the calibration's uncertainty, and where that uncertainty is read at measurement time; the robust spread for jumps. Also the check of the standard deviation of the block means with current (§9.3 step 6) | R7 |
+| WP9 | **§8 items 2 and 3**: whether the ± of signal results includes the calibration's uncertainty, and where that uncertainty is read at measurement time; the robust spread for jumps. Also the check of the standard deviation of the block means with current (§9.3 step 5) | R7 |
 | WP10 | **Filter evidence** (§8 item 5), by scripts outside the package, on the sample-quality recordings: the spectrum of the regression's residual, the spread of repeated bursts against WP8's ±, the same analysis with and without a zero-phase Butterworth filter, and the oscilloscope's reading. It ends in a report, and the operator decides | report |
 | WP11 | Only if a filter is adopted: the filter in "Analyze a recording" (§3.5), compared with the standard analysis on the same recordings, with WP8's ± shown to still cover on filtered data | R8 |
 | WP12 | Closing: §3.6 and §8 with the decisions; README; `CHANGELOG.md` 0.2.0; the 0.2 bench procedure (a full calibration over RS-232; repeated bursts for the coverage of the periodic ±); the bench session; the tag v0.2.0 | R9 → bench session |
