@@ -531,7 +531,7 @@ analysis.
 
 - **Reading summary** of one quantity (C.4): discard the settling (0.5 s for calibration readings; the
   first period or block for signals); 100 ms block means; value = mean of the block means; spread =
-  standard deviation of the block means; **uncertainty of the value: method B** (decided, §8); σ per sample; jumps; drift; correlation between neighbouring blocks (reported); fraction of
+  standard deviation of the block means; **uncertainty of the value: the standard deviation of the block means** (decided, §8); σ per sample; jumps; drift; correlation between neighbouring blocks (reported); fraction of
   samples at the ADC limits.
 - **Periodic signals** (C.7): the **cycle average** (mean and standard deviation, phase by phase, over
   all periods except the first); level, peak-to-peak and rms of the cycle average; its rms and maximum
@@ -1165,27 +1165,31 @@ class Instrument(Protocol):            # implemented by m1k.py and simulator.py
 - uncertainties reach the offset and the gain by **perturbation** (move one input by ±u, see how far the
   result moves; C.6);
 - expanded uncertainty **U = 2·u** (about 95 % for a normal distribution);
-- **the uncertainty of a reading's mean is method B** (decided 2026-11-21; it was open
-  item 1): u = the standard deviation of the block means, **not** divided by √n. The code keeps it in
-  one function (`analysis.uncertainty_of_mean`). The evidence, from the 2026-11-21 rest recordings
-  (four groups of three identical 10 s bursts at GND, CH A and CH B, cold and warm):
-  - the ratio of the real spread of the three means to what each method promised for one burst,
-    as a geometric mean over the four groups: **A** (s ÷ √n) 6.2; **C** (below) 2.4; **B** 0.67;
-  - with only three bursts per group, a method that is exact gives about 0.75, and 0.42–1.2 over
-    four groups (by simulation). So B is right, while A and C promise 3 to 8 times too little;
+- **the uncertainty of a reading's mean is the standard deviation of its block means, not divided
+  by √n** (decided 2026-11-21; it was open item 1). It is justified by the correlation between
+  neighbouring blocks (H-14) and by repeated test recordings. The code keeps it in one function
+  (`analysis.uncertainty_of_mean`). The evidence, from the 2026-11-21 rest recordings (four groups
+  of three identical 10 s bursts at GND, CH A and CH B, cold and warm):
+  - the ratio of the real spread of the three means to what each calculation promised for one
+    burst, as a geometric mean over the four groups: **0.67** for the standard deviation of the
+    block means; 6.2 for that standard deviation divided by √n; 2.4 for a correlation-corrected
+    division (C.4);
+  - with only three bursts per group, an exact calculation gives about 0.75, and 0.42–1.2 over four
+    groups (by simulation). So the standard deviation of the block means is right, while both
+    divisions promise 3 to 8 times too little;
   - the block correlation survives detrending (r₁ 0.46–0.75): the noise wanders, which the AR(1)
-    model behind C does not capture. A simulation of AR(1) noise plus a slow wander reproduces the
-    pattern (A ≈ 10, B ≈ 1, C ≈ 3);
+    model behind the correlation-corrected division does not capture. A simulation of AR(1) noise
+    plus a slow wander reproduces the pattern (about 1, 10 and 3, in the same order);
   - the cost: in the 2026-11-21 measure-V calibration the M1K's part was 9–15 % of the variance at
-    the main point, so B makes U 5–8 % larger than A would;
+    the main point, so U is 5–8 % larger than with the division by √n;
   - the limits: voltage at rest only. The first bench session with current repeats the test (three
     identical bursts) for current.
 
 **Open — the operator decides:**
 
-1. *(Decided on 2026-11-21: method B, above. The candidate it was weighed against, C, is a
-   correlation-corrected method: an effective number of blocks from the lag-1
-   correlation, with a bias correction; its formula stays in C.4 for reference.)*
+1. *(Decided on 2026-11-21: the standard deviation of the block means, above. The
+   correlation-corrected division it was weighed against uses an effective number of blocks from
+   the lag-1 correlation, with a bias correction; its formula stays in C.4 for reference.)*
 2. Whether the ± of signal results includes the calibration's uncertainty.
 3. The robust spread used for jumps: 1.4826 × MAD (provisional) or one based on the interquartile range.
 4. The uncertainty of periodic results (amplitude, level, phase, impedance seen): shown without ± for
@@ -1206,7 +1210,8 @@ in short series, or a jump limit that is too tight.)
 - for every value of the effect table, count the misses; with k = 2 an honest method misses about 45 of
   1000 (standard deviation ≈ 7, the normal approximation to the binomial);
 - **fail above 65 misses** (the coverage is clearly too low; false-alarm risk about 0.1 %); **warn below
-  25** (U exaggerated; expected for some M1K-dominated values under method B, and reported as such);
+  25** (U exaggerated; expected for some M1K-dominated values, whose u is the standard deviation of the block means, and
+  reported as such);
 - no verification failed and no reading redone without a reason.
 
 ---
@@ -1309,16 +1314,19 @@ analyzes the results; the operator runs it:
 5. Calibration, measure-v stage only, with `--output` to a test folder (EEPROM untouched; typed mode, as
    the RS-232 link is validated on the bench in 0.2, §4.2): the new record within the uncertainty of the
    stored one (H-03).
-6. Method B with current (§8): step 3's burst repeated three times, identical, 10 s each, within a few
-   minutes, on CH A and on CH B. The developer compares the spread of the three current means with the u
-   that method B gave for one burst, as on 2026-11-21 for voltage at rest, and reports the ratio.
+6. The standard deviation of the block means with current (§8): step 3's burst repeated three times,
+   identical, 10 s each, within a few minutes, on CH A and on CH B. The developer compares the spread
+   of the three current means with the u that the standard deviation of the block means gave for one
+   burst, as on 2026-11-21 for voltage at rest, and reports the ratio.
 
 Accepted when the results are as predicted and no check flags a problem that the mounted circuit does not
 have.
 
 ---
 
-## 10. Work plan for v0.1
+## 10. Work plans
+
+### 10.1 v0.1
 
 | WP | Content | Review |
 |---|---|---|
@@ -1339,11 +1347,37 @@ test; the suite green without the instrument in under ~2 min, on both environmen
 approved; documentation delivered; the bench acceptance (§9.3) run by the operator, with the results in
 the lab notes.
 
+### 10.2 0.2
+
+**Before it starts:** the v0.1 bench acceptance (§9.3) and the tag v0.1.0. Then a bench session on the
+quality of the samples, whose recordings feed WP8 and WP10: a sine on a resistor at three frequencies,
+three identical 10 s bursts at each, and the oscilloscope on the M1K's input for content above 50 kHz.
+The developer writes its procedure for the operator, kept with the lab notes.
+
+| WP | Content | Review |
+|---|---|---|
+| WP7 | **RS-232 on the bench** (§4.2): a command that checks only the multimeter link, without the M1K (identify, configure, a few readings and the interval between them), tested first against a fake transport; the 34401A profile checked against its user's guide (the resolution `CONF` sets, the time per reading, the lag of the time stamp); the four calibration stages in automatic mode into a test folder, compared with the typed mode; each fix with a test | R5 → bench |
+| WP8 | **The uncertainty of periodic results** (§8 item 4): a note with the options and their coverage in the simulator; the operator decides; then a ± for the level, amplitude and phase and the impedance seen, with a coverage test. The note also asks whether periodic results get the quality indicators that DC results already have (σ, r₁, jumps, drift). The real coverage is checked on the repeated bursts of the sample-quality session | R6 |
+| WP9 | **§8 items 2 and 3**: whether the ± of signal results includes the calibration's uncertainty, and where that uncertainty is read at measurement time; the robust spread for jumps. Also the check of the standard deviation of the block means with current (§9.3 step 6) | R7 |
+| WP10 | **Filter evidence** (§8 item 5), by scripts outside the package, on the sample-quality recordings: the spectrum of the regression's residual, the spread of repeated bursts against WP8's ±, the same analysis with and without a zero-phase Butterworth filter, and the oscilloscope's reading. It ends in a report, and the operator decides | report |
+| WP11 | Only if a filter is adopted: the filter in "Analyze a recording" (§3.5), compared with the standard analysis on the same recordings, with WP8's ± shown to still cover on filtered data | R8 |
+| WP12 | Closing: §3.6 and §8 with the decisions; README; `CHANGELOG.md` 0.2.0; the 0.2 bench procedure (a full calibration over RS-232; repeated bursts for the coverage of the periodic ±); the bench session; the tag v0.2.0 | R9 → bench session |
+
+**Order:** the numbers are the order. WP7 runs in parallel with WP8 and WP9, which touch other files.
+WP8 and WP9 come before WP10, so that the filter is judged by numbers: whether it moves a result
+beyond its U, or makes U smaller.
+
+**Definition of done:** the decisions of §8 recorded in §3.6, §8 and C; every new call sequence to an
+instrument with a call-order test; the suite green without instruments in under ~2 min, on both
+environments; reviews R5–R9 approved (R8 only if WP11 runs); the 0.2 bench acceptance run by the
+operator, with the results in the lab notes.
+
 ---
 
 ## 11. Open decisions (as of 2026-11-24)
 
-1. *(Decided on 2026-11-21: the uncertainty of a reading's mean is method B, §8.)*
+1. *(Decided on 2026-11-21: the uncertainty of a reading's mean is the standard deviation of its
+   block means, §8.)*
 2. Whether signal results include the calibration's uncertainty (§8).
 3. The robust spread for jumps (§8).
 4. The research protocol (shapes, currents at the culture, duration, duty cycle,
@@ -1598,8 +1632,8 @@ note: libsmu writes the current factor 1.6 as 0.8*0.2*20.*0.5, which in double p
 x = raw samples without the settling;  n blocks of 100 ms;  b_j = mean of block j
 value = mean(b)
 s_b   = standard deviation of b
-u     = s_b                                                 (method B, decided 2026-11-21: §8)
-        [method C, not chosen, for reference: ρ₁ = Σ(b_j − b̄)(b_{j+1} − b̄) ÷ Σ(b_j − b̄)²;
+u     = s_b                                    (not divided by √n; decided 2026-11-21: §8)
+        [correlation-corrected division, not chosen, for reference: ρ₁ = Σ(b_j − b̄)(b_{j+1} − b̄) ÷ Σ(b_j − b̄)²;
          ρ = clamp(ρ₁ + (1 + 4·max(ρ₁, 0)) ÷ n, 0, 0.95);  n_ef = n·(1 − ρ) ÷ (1 + ρ);  u = s_b ÷ √n_ef]
 σ = standard deviation of x;  if σ < step/2: u = √(u² + (step/√12)²)
 r₁ = correlation between (b_1 … b_{n−1}) and (b_2 … b_n)    (reported)
@@ -1714,4 +1748,4 @@ test hooks: a channel reading crooked at 5 V, a jump in a block, the V/I swap, t
 - GUM: JCGM 100:2008, *Evaluation of measurement data — Guide to the expression of uncertainty in
   measurement*.
 - N. F. Zhang, "Calculation of the uncertainty of the mean of autocorrelated measurements", *Metrologia*
-  43 (2006) — background for method C.
+  43 (2006) — background for the correlation-corrected division (C.4).
