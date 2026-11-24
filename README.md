@@ -202,8 +202,8 @@ folder, the errors before and after, ±U, the verifications and the budget.
 - `calibrations/<date>_<time>_<stage>/`: `calib.txt` (for `smu -w`, written only with all 8 blocks),
   `blocks.txt`, `readings.csv`, `dmm.csv`, `report.txt` and `metadata.json`.
 
-A stopped calibration still writes what finished, in a folder ending in `_interrupted`. These folders,
-`lab/` and `drafts/` stay out of git: back them up yourself.
+A stopped calibration still writes what finished, in a folder ending in `_interrupted`. These folders
+and `lab/` stay out of git: back them up yourself.
 
 ## Checks
 

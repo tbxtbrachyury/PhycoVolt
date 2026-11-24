@@ -180,8 +180,8 @@ behavior, found by reading its source code and by measuring on the instrument.
    or a live culture, and a mode change applies voltage or current (L-04, L-05). When you need
    something from the hardware, write a procedure and ask the operator. Reading libsmu's source code
    and the system state (udev, permissions, sysfs) is free.
-2. **The data are the operator's.** `calib.txt`, `recordings/`, `calibrations/`, `lab/` and `drafts/`
-   are never deleted or rewritten. Your test runs write to a scratch folder (`--output`).
+2. **The data are the operator's.** `calib.txt`, `recordings/`, `calibrations/` and `lab/` are never
+   deleted or rewritten. Your test runs write to a scratch folder (`--output`).
 3. **The EEPROM is written only by the operator** (`smu -w`), never by the program (I-08).
 4. **No new dependency without the operator's OK.** Approved for v0.1: numpy, scipy, matplotlib with
    the Qt backend (PySide6), rich, pyserial, and libsmu/pysmu 1.0.3. To try something else, use a
@@ -197,7 +197,7 @@ behavior, found by reading its source code and by measuring on the instrument.
 8. **Appearance:** check the terminal output at 80 columns, on dark and light terminals.
 9. **The repository is public.** Versioned files carry no personal data, no names of people or
    institutions, and no content from unpublished research documents. Local material stays out of
-   git: the operator's folders (`lab/`, `drafts/`, results) through `.gitignore`, anything else
+   git: the operator's folders (`lab/`, results) through `.gitignore`, anything else
    through `.git/info/exclude`.
 
 ---

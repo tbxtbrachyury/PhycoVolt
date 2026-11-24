@@ -14,7 +14,7 @@ instrument knowledge (§6) and the formulas. This file only holds the rules that
    culture, and a mode change applies voltage or current at once. When something is needed from the
    hardware, write a procedure for the operator. Reading libsmu's source and the system state is free.
 2. **Never write the M1K's EEPROM.** Never delete or rewrite the operator's data: `calib.txt`,
-   `recordings/`, `calibrations/`, `lab/`, `drafts/`. Test runs write to a scratch folder (`--output`).
+   `recordings/`, `calibrations/`, `lab/`. Test runs write to a scratch folder (`--output`).
 3. **Every call sequence to the instrument follows the operating rules of the spec's §6.1.** Code that
    talks to an instrument starts with a call-order test against the fake pysmu. A new sequence never goes
    to the instrument without the operator's approval.
@@ -31,7 +31,7 @@ instrument knowledge (§6) and the formulas. This file only holds the rules that
    record the problem in the decision log and report it.
 9. **The repository is public.** Versioned files carry no personal data, no names of people or
    institutions, and no content from unpublished research documents. Local material stays out of git:
-   the operator's folders (`lab/`, `drafts/`, results) through `.gitignore`, anything else (the decision
+   the operator's folders (`lab/`, results) through `.gitignore`, anything else (the decision
    log included) through `.git/info/exclude`. Comments, docstrings and commit messages describe the
    code, not the conversation that produced it.
 
@@ -54,4 +54,6 @@ instrument knowledge (§6) and the formulas. This file only holds the rules that
 - `docs/specification.md` — what to build, the instrument knowledge, formulas, acceptance.
 - `docs/decisions.md` — the decision log (local).
 - `calib.txt` — the calibration stored in the M1K's EEPROM on 2026-11-18 (operator's data).
-- `lab/` — the operator's lab notes, the bench procedure and the acceptance evidence (local).
+- `lab/` — the operator's notebook (local): the reference texts at its root, each version's records
+  (documentation, bench procedures, acceptance, analyses) in `lab/v0.1/`, `lab/v0.2/`…, and the
+  records from before the rewrite in `lab/origins/`. Its `README.md` is the index.
