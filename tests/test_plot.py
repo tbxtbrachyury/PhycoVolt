@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -132,3 +133,13 @@ def test_a_calibration_is_drawn(calibration_folder: Path, tmp_path: Path) -> Non
                 assert axis.get_offset_text().get_text() == ""
     with pytest.raises(ValueError):
         rec.read_calibration(tmp_path) if (tmp_path / rec.METADATA_FILE).write_text("{}", encoding="utf-8") else None
+
+
+def test_a_calibration_that_names_the_uncertainty_b_is_still_drawn(calibration_folder: Path, tmp_path: Path) -> None:
+    """Calibration folders made before the calculation got its descriptive name hold "B" in
+    `uncertainty_method`; they are still read and drawn."""
+    meta = json.loads((calibration_folder / rec.METADATA_FILE).read_text(encoding="utf-8"))
+    assert meta["uncertainty_method"] == "std_of_block_means"
+    meta["uncertainty_method"] = "B"
+    (tmp_path / rec.METADATA_FILE).write_text(json.dumps(meta), encoding="utf-8")
+    assert len(plot.calibration_figures(rec.read_calibration(tmp_path))) == 2

@@ -5,8 +5,9 @@ the time. In the simulator the true error is known. This repeats each stage 1000
 with new noise and new multimeter range errors, runs the very `calibration.solve` of the program on
 the readings, and counts, for every value of the effect table, how often the true error falls
 outside. An honest k = 2 misses about 45 of 1000 (standard deviation about 7): above 65 the test
-fails; below 25 U is exaggerated (expected where the multimeter's rectangular specification or
-method B dominates) and is reported. No verification may fail.
+fails; below 25 U is exaggerated (expected where the multimeter's rectangular specification
+dominates, or the M1K's part, whose u is the standard deviation of its block means) and is
+reported. No verification may fail.
 
 Run as a script to print the table:
     python -m tests.test_monte_carlo         (from the project root)

@@ -19,7 +19,7 @@ Main choices:
   uncertainty is propagated by perturbing every named error source by +-u through the same
   computation, in double precision (C.6): each multimeter range is two sources (gain and zero),
   shared by every reading on it; each point adds the multimeter's spread and the M1K's block
-  statistics (method B, `analysis.uncertainty_of_mean`). U = 2u.
+  statistics (the standard deviation of its block means, `analysis.uncertainty_of_mean`). U = 2u.
 - "Predicted error ± U" compares what libsmu will give with the new record against the true
   behavior, which is the line through the points minus their errors.
 """

@@ -634,9 +634,10 @@ HOW = ("The first period (or the first 100 ms block for DC) is left out while th
        "sine's level, amplitude and phase come from a fit of level + sine + cosine at the asked frequency; "
        "other waveforms from the cycle average (the periods laid over each other, phase by phase; "
        "amplitude = half the peak-to-peak). A DC level is the mean of the 100 ms block means, and its ± is "
-       "their standard deviation (method {method}, spec §8). The ± shown is statistical only: the "
-       "calibration's uncertainty is not included (an open decision). Expected values use Ohm's law with "
-       "the informed resistance and the return read at rest.")
+       "their standard deviation, not divided by the square root of their number, because neighbouring "
+       "blocks are correlated (spec §8). The ± shown is statistical only: the calibration's uncertainty "
+       "is not included (an open decision). Expected values use Ohm's law with the informed resistance "
+       "and the return read at rest.")
 
 
 # --- Signals: before switching on -----------------------------------------------------------------
@@ -761,12 +762,11 @@ def summary_lines(measurement: Measurement, folder: Path | None, view: View = FI
         lines += ([Text()] if k else []) + channel_header(name, prepared.config(name), view.width)
         for label, value in _channel_rows(name, prepared.config(name), measurement.results[name], prepared):
             lines += labeled(label, value, view.width)
-    how = HOW.format(method=analysis.UNCERTAINTY_METHOD)
     if view.terminal:
         lines += [Text()] + wrapped(Text(f"How the numbers were obtained, and every check: {SUMMARY_FILE} in the "
                                          f"folder.", style=CONTEXT), "", view.width)
     else:
-        lines += section("How the numbers were obtained", view) + wrapped(how, "", view.width, "")
+        lines += section("How the numbers were obtained", view) + wrapped(HOW, "", view.width, "")
     if not (view.terminal and before_shown):
         lines += section("Before switching on", view) + checks_block(prepared.checks, view)
     lines += section("After the measurement", view) + checks_block(measurement.after, view)
@@ -970,9 +970,9 @@ def calibration_report_lines(run: "calibration.CalibrationRun", started: datetim
         lines += section("Warnings kept by the operator", view)
         for warning in run.warnings:
             lines.extend(check_lines(warning, "  ", width))
-    lines += [Text()] + wrapped(Text(f"The ± are expanded uncertainties (U = 2u). The M1K's part uses method "
-                                     f"{analysis.UNCERTAINTY_METHOD}: the standard deviation of the 100 ms block "
-                                     f"means.", style=CONTEXT), "", width)
+    lines += [Text()] + wrapped(Text("The ± are expanded uncertainties (U = 2u). The M1K's part of u is the "
+                                     "standard deviation of its 100 ms block means, not divided by the square "
+                                     "root of their number.", style=CONTEXT), "", width)
     if base is not None and calib_path is not None and len(run.stages) < len(cal.STAGES):
         lines.extend(wrapped(Text(f"The blocks of the stages not run come from {base}.", style=CONTEXT), "", width))
     failed = sum(not check.passed for check in verifications)

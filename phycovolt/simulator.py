@@ -612,9 +612,10 @@ class BlockLevelBench:
 
     The M1K's value of a reading is the mean of its 100 ms block means, with the unit's noise model
     (white noise averaged in each block, plus slow noise with the measured block correlation); its u
-    is method B on those blocks. The multimeter reads every 300 ms after the settling, with a gain
-    and zero error drawn once per range within the profile's specification. Nothing else differs
-    from a calibration on the simulated bench, and it is a thousand times faster.
+    is the standard deviation of those block means (`analysis.uncertainty_of_mean`). The multimeter
+    reads every 300 ms after the settling, with a gain and zero error drawn once per range within
+    the profile's specification. Nothing else differs from a calibration on the simulated bench,
+    and it is a thousand times faster.
     """
 
     def __init__(self, unit: Unit, profile: multimeter.Profile, rng: np.random.Generator,

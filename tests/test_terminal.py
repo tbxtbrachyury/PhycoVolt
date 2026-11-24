@@ -557,16 +557,21 @@ def test_a_stored_record_at_the_default_is_yellow_in_status(monkeypatch: pytest.
     assert records and all("\x1b[33m" in line for line in records) and not any("\x1b[32m✓" in r for r in records)
 
 
-def test_method_b_is_decided_in_the_files(tmp_path: Path, capsys: pytest.CaptureFixture,
-                                          typed_calibration: tuple[str, Path, list[str]]) -> None:
-    """Method B is decided (spec 8, 2026-11-21): no "provisional" next to it; the
-    robust spread (open item 3) keeps its own."""
+def test_the_uncertainty_is_decided_in_the_files(tmp_path: Path, capsys: pytest.CaptureFixture,
+                                                 typed_calibration: tuple[str, Path, list[str]]) -> None:
+    """The uncertainty of a reading's mean is decided (spec 8, 2026-11-21) and named by what it
+    computes: no "provisional" and no method letter next to it; the robust spread (open item 3)
+    keeps its own "provisional"."""
     _, folder = burst_output(tmp_path, capsys)
     summary = " ".join((folder / recording.SUMMARY_FILE).read_text(encoding="utf-8").split())
-    assert "(method B, spec §8)" in summary and "provisional" not in summary
+    assert ("its ± is their standard deviation, not divided by the square root of their number, because "
+            "neighbouring blocks are correlated (spec §8)." in summary)
+    assert "provisional" not in summary and "method" not in summary
     report = " ".join((typed_calibration[1] / recording.REPORT_FILE).read_text(encoding="utf-8").split())
-    assert "uses method B: the standard deviation of the 100 ms block means." in report
-    assert "provisional" not in report
+    assert ("The M1K's part of u is the standard deviation of its 100 ms block means, not divided by the "
+            "square root of their number." in report)
+    assert "provisional" not in report and "method" not in report
     from phycovolt import analysis
-    assert "Method B (spec 8, decided 2026-11-21)" in analysis.uncertainty_of_mean.__doc__
+    assert ("The standard deviation of the block means (spec 8, decided 2026-11-21)"
+            in analysis.uncertainty_of_mean.__doc__)
     assert "Provisional (spec 8, open item 3)" in analysis.robust_spread.__doc__

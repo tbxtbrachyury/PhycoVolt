@@ -93,7 +93,8 @@ def test_metadata_has_what_the_analysis_needs(tmp_path: Path) -> None:
     assert meta["ended"] == "complete" and meta["interrupted"] is False
     assert {c["code"] for c in meta["checks"]["before"]} >= {"wiring", "pin_limit", "frequency"}
     assert meta["results"]["A"]["i_fit_amplitude_a"] == pytest.approx(0.1, rel=0.01)
-    assert meta["results"]["statistical_only"] is True and meta["results"]["uncertainty_method"] == "B"
+    assert meta["results"]["statistical_only"] is True
+    assert meta["results"]["uncertainty_method"] == "std_of_block_means"
     assert meta["files"] == ["samples.csv.gz", "metadata.json", "summary.txt"]
 
 
@@ -119,6 +120,37 @@ def test_analyzed_again_from_the_files_alone(tmp_path: Path, a: ChannelConfig, b
             else:
                 assert repeated[key] == value, key
     assert [c.text for c in again.after] == [c.text for c in measurement.after]
+
+
+def test_a_recording_that_names_the_uncertainty_b_is_analyzed_again(tmp_path: Path) -> None:
+    """Recordings made before the calculation got its descriptive name hold "B" in
+    `results.uncertainty_method` and in every `<prefix>_u_method`: they are still read and analyzed
+    again, with the same numbers and the current name."""
+    dc = ChannelConfig(Role.SOURCE_I, ci.default_circuit(Role.SOURCE_I),
+                       wf.default_waveform(Role.SOURCE_I, Shape.DC, "2.5V"))
+    measurement = measured(dc)
+    folder = rec.write(measurement, tmp_path)
+    path = folder / rec.METADATA_FILE
+    meta = json.loads(path.read_text(encoding="utf-8"))
+    meta["results"]["uncertainty_method"] = "B"
+    renamed = [(name, key) for name in ("A", "B") for key in meta["results"][name] if key.endswith("_u_method")]
+    assert renamed                                               # the DC channel has its summaries
+    for name, key in renamed:
+        meta["results"][name][key] = "B"
+    path.write_text(json.dumps(meta, indent=2), encoding="utf-8")
+    found = rec.read(folder)
+    assert found.metadata["results"]["uncertainty_method"] == "B"
+    for name in ("A", "B"):
+        original = measurement.results[name].numbers()
+        again = found.measurement.results[name].numbers()
+        assert again.keys() == original.keys()
+        for key, value in original.items():
+            if isinstance(value, float):
+                assert again[key] == pytest.approx(value, rel=1e-12, abs=1e-18), key
+            else:
+                assert again[key] == value, key
+    assert {found.measurement.results[name].numbers()[key] for name, key in renamed} == {"std_of_block_means"}
+    assert "statistical only" in " ".join(rec.summary_text(found.measurement, folder).split())
 
 
 def test_summary_is_plain_text_within_100_columns(tmp_path: Path) -> None:

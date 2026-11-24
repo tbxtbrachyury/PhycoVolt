@@ -8,9 +8,9 @@ Main choices (spec 3.6 and 8, C.4, C.5, C.7):
 
 - Nothing is decided from one sample: a reading is summarized by its 100 ms block means (6 cycles of
   60 Hz, so the hum cancels in each). Value = mean of the block means; spread = their standard
-  deviation. The uncertainty of the value is method B (spec 8): the spread
-  itself, without dividing by the square root of the number of blocks, because
-  neighbouring block means are correlated (H-14). It lives in ONE function, `uncertainty_of_mean`.
+  deviation. The uncertainty of the value is that spread itself (spec 8), not divided by the square
+  root of the number of blocks, because neighbouring block means are correlated (H-14). It lives in
+  ONE function, `uncertainty_of_mean`.
 - A periodic signal is laid period over period (the cycle average), without the first period; a
   sine is fitted with level + sine + cosine at the known frequency (synchronous detection).
 - The robust spread for jumps is one function too (open item 3; provisional 1.4826 x MAD).
@@ -30,20 +30,20 @@ from phycovolt import hardware as hw
 from phycovolt import libsmu_math
 from phycovolt.hardware import Kind, Record
 
-# --- The two open statistical choices (spec 8): one function each ---------------------------------
+# --- The two statistical choices (spec 8): one function each --------------------------------------
 
-UNCERTAINTY_METHOD = "B"              # recorded with every result
+UNCERTAINTY_METHOD = "std_of_block_means"     # what u is, recorded with every result
 
 
 def uncertainty_of_mean(block_means: np.ndarray) -> float:
     """The standard uncertainty of a reading's value, from its 100 ms block means.
 
-    Method B (spec 8, decided 2026-11-21): the standard deviation of the block
-    means, NOT divided by the square root of their number, because neighbouring blocks are
-    correlated (H-14) and the division would promise an uncertainty several times too small. On the
-    2026-11-21 rest recordings the real spread of repeated bursts was 0.67 times B's value (an exact
-    method gives about 0.75), against 6.2 for the division and 2.4 for method C. Another method
-    would be a change in this function only (and in UNCERTAINTY_METHOD).
+    The standard deviation of the block means (spec 8, decided 2026-11-21), NOT divided by the
+    square root of their number, because neighbouring blocks are correlated (H-14) and the division
+    would promise an uncertainty several times too small. On the 2026-11-21 rest recordings the real
+    spread of repeated bursts was 0.67 times this value (an exact calculation gives about 0.75),
+    against 6.2 for the division by √n and 2.4 for a correlation-corrected division (C.4). Another
+    calculation would be a change in this function only (and in UNCERTAINTY_METHOD).
     """
     return float(np.std(block_means, ddof=1)) if len(block_means) > 1 else math.nan
 
@@ -73,7 +73,7 @@ class Summary:
     """One quantity of one reading, without its settling (C.4). V or A."""
 
     value: float                      # mean of the block means
-    u: float                          # standard uncertainty (method in `method`)
+    u: float                          # standard uncertainty (its calculation named in `method`)
     spread: float                     # standard deviation of the block means
     sigma: float                      # standard deviation per sample (noise)
     blocks: int

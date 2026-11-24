@@ -32,27 +32,27 @@ def ar1_block_means(rng: np.random.Generator, n: int, correlation: float, std: f
     return values
 
 
-def test_correlated_blocks_sigma_over_root_n_under_covers_and_method_b_does_not() -> None:
+def test_correlated_blocks_sigma_over_root_n_under_covers_and_the_block_spread_does_not() -> None:
     # H-14: neighbouring 100 ms means correlated at 0.75. The true mean is 0; count how often
     # "value +- 2u" contains it.
     rng = np.random.default_rng(2)
     trials, blocks = 1_000, 30
-    covered_b = covered_naive = 0
+    covered_spread = covered_naive = 0
     for _ in range(trials):
         means = ar1_block_means(rng, blocks, 0.75, 1.0)
         value = np.mean(means)
-        u_b = analysis.uncertainty_of_mean(means)
+        u_spread = analysis.uncertainty_of_mean(means)             # the standard deviation of the means
         u_naive = np.std(means, ddof=1) / math.sqrt(blocks)      # what sigma / sqrt(N) amounts to
-        covered_b += abs(value) <= 2 * u_b
+        covered_spread += abs(value) <= 2 * u_spread
         covered_naive += abs(value) <= 2 * u_naive
-    assert covered_b / trials >= 0.95
+    assert covered_spread / trials >= 0.95
     assert covered_naive / trials < 0.75
 
 
-def test_method_b_is_the_spread_of_the_block_means() -> None:
+def test_the_uncertainty_is_the_spread_of_the_block_means() -> None:
     means = np.array([1.0, 2.0, 3.0, 4.0])
     assert analysis.uncertainty_of_mean(means) == pytest.approx(np.std(means, ddof=1))
-    assert analysis.UNCERTAINTY_METHOD == "B"
+    assert analysis.UNCERTAINTY_METHOD == "std_of_block_means"
 
 
 def test_summary_of_a_quiet_reading_adds_the_step() -> None:
