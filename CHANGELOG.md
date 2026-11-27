@@ -3,9 +3,10 @@
 The format follows [Keep a Changelog](https://keepachangelog.com/), and versions follow
 [Semantic Versioning](https://semver.org/).
 
-## [0.1.0] - Unreleased
+## [0.1.0] - 2026-11-27
 
-Released after its acceptance on the bench.
+Accepted on the bench on 2026-11-26, with resistors only. Two bench steps move to 0.2: repeated
+bursts that check the uncertainty with current, and a measure-v calibration in typed mode.
 
 ### Added
 

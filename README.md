@@ -11,8 +11,8 @@ command line it:
    checking the result against the circuit's physics;
 3. **records** everything, analyzes a recording again at any time and plots it on request.
 
-Version 0.1.0, not released yet: it is released after its acceptance on the bench, and no culture is
-connected before that.
+Version 0.1.0, released on 2026-11-27 after its acceptance on the bench, where it was tested with
+resistors only. The i-v-i board that leads to the cultures is not characterized yet (version 0.3).
 
 ## Safety
 
